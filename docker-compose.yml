@@ -1,0 +1,28 @@
+version: '3.4'
+volumes:
+  postgres:
+services:
+  db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  web:
+    image: docker-pipeline-api:latest
+    build:
+      context: .
+      args: &args
+        DOCKER_UID: ${DOCKER_UID}
+        DOCKER_GID: ${DOCKER_GID}
+        DOCKER_USER: ${DOCKER_USER}
+    volumes:
+      - .:/workspace
+    ports:
+      - "3000:3000"
+    depends_on:
+      - 'db'
+    env_file:
+      - .env
