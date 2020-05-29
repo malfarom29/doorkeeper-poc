@@ -47,7 +47,7 @@ end
 add_index :oauth_applications, :uid, unique: true
 ```
 
-Now for `oauth_access_tokens` table, remove `previous_refresh_token` field so once we use a refresh toke this will be instantly revoked. The table create migration should look like this:
+Now for `oauth_access_tokens` table, remove `previous_refresh_token` field so once we use a refresh token this will be instantly revoked. The table create migration should look like this:
 
 ```ruby
 create_table :oauth_access_tokens do |t|
@@ -154,7 +154,7 @@ Now make a request to `POST /oauth/authorize` with the following parameters
 ```json
 {
   "client_id": "GENERATED_APPLICATION_UID",
-  "redirect_uri": "REDIRECT_URI_FIELD_VALUE",
+  "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
   "response_type": "code"
 }
 ```
