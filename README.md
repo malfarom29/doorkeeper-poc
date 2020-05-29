@@ -26,8 +26,10 @@ gem 'doorkeeper'
 
 Now we have to install doorkeeper and generate its migration by running the following commands:
 
-`bundle exec rails generate doorkeeper:install`  
-`bundle exec rails generate doorkeeper:migration`
+```bash
+bundle exec rails generate doorkeeper:install
+bundle exec rails generate doorkeeper:migration
+```
 
 Now we go to the migration we've just created and remove `null: false` for redirtect_uri on `oauth_applications` table, because we don't really need it right now. So the table create migration should look like this:
 
@@ -71,6 +73,20 @@ add_foreign_key(
 
 As for `oauth_access_grants` table, leave as it is.
 
+Run 
+
+```bash
+bundle exec rails db:migrate
+```
+
+Now, as we are working on a Rails API and also working without using doorkeeper scopes, go to `config/initializers/doorkeeper.rb` and add the following two lines
+
+```ruby
+default_scopes :public
+api_only
+base_controller 'ActionController::API'
+```
+
 ## Doorkeeper-Devise Configuration
 
 One of the grant flows we are using is `password`, for this we are going to use [Devise](https://github.com/heartcombo/devise) as authentication solution so we can handle user passwords easily.
@@ -95,4 +111,76 @@ And add `password` on grant_flows.
 grant_flows %w[password]
 ```
 
-And to be able to use refresh token, uncomment `use_refresh_token` line.
+Now, to request the access token send the `username`, `password` and `grant_type` to `POST /oauth/token`.
+
+```json
+// Request Body
+{
+  "username": "username",
+  "password": "password",
+  "grant_type": "password"
+}
+```
+
+And this will send us back our `access_token` and `refresh_token`.
+
+## Doorkeeper Authorization Code Flow
+
+For the `authorization_code` grant we define `resource_owner_authenticator` on the initializer
+
+```ruby
+resource_owner_authenticator do
+  app = Doorkeeper::Application.find_by_uid(params[:client_id])
+  app
+end
+```
+
+And set `authorization_code` as grant_flow
+
+```ruby
+grant_flows %w[authorization_code]
+```
+
+Now we proceed to create our `oauth_application` directly from the console setting `redirect_uri` as `urn:ietf:wg:oauth:2.0:oob`  this will tell doorkeeper to display authorization code instead of redirecting to a client application, because we are working on an API this works for us.
+
+```ruby
+Doorkeeper::Application.create(name: 'POC App', redirect_uri: "urn:ietf:wg:oauth:2.0:oob")
+```
+
+This will create an application with an `uid` and a `secret`, which will be our `client_id` and `client_secret` respectively.
+
+Now make a request to `POST /oauth/authorize` with the following parameters
+
+```json
+{
+  "client_id": "GENERATED_APPLICATION_UID",
+  "redirect_uri": "REDIRECT_URI_FIELD_VALUE",
+  "response_type": "code"
+}
+```
+
+The response will be like this:
+
+```json
+{
+  "status": "redirect",
+  "redirect_uri": {
+    "action": "show",
+    "code": "AUTHORIZATION_CODE"
+  }
+}
+```
+
+We will take the code and send it to `POST /oauth/token` with the following params
+
+```json
+{
+	"client_id": "GENERATED_APPLICATION_UID",
+	"client_secret": "GENERATED_APPLICATION_SECRET",
+	"code": "AUTHORIZATION_CODE_PREVIOUSLY_GENERATED",
+	"redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+	"grant_type": "authorization_code"
+}
+```
+
+And this will send us back our `access_token` and `refresh_token`.
