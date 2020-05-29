@@ -18,7 +18,7 @@ Then, to start the project, run the following command:
 
 # Getting Started
 
-This a POC project for Doorkeeper usability, so first we have to add it in our Gemfile
+This is a POC project for Doorkeeper usability, so first we have to add it in our Gemfile
 
 ```
 gem 'doorkeeper'
