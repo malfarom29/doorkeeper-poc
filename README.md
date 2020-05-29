@@ -135,7 +135,7 @@ resource_owner_authenticator do
 end
 ```
 
-And set `authorization_code` as grant_flow
+And set or add `authorization_code` as grant_flow
 
 ```ruby
 grant_flows %w[authorization_code]
