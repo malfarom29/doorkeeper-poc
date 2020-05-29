@@ -2,6 +2,10 @@
 
 Doorkeeper.configure do
   orm :active_record
+  default_scopes :public
+  api_only
+  base_controller 'ActionController::API'
+  allow_blank_redirect_uri false
 
   resource_owner_from_credentials do |_routes|
     user = User.find_for_database_authentication(email: params[:username])
@@ -11,6 +15,11 @@ Doorkeeper.configure do
     end
   end
 
+  resource_owner_authenticator do
+    app = Doorkeeper::Application.find_by_uid(params[:client_id])
+    app
+  end
+
   use_refresh_token
-  grant_flows %w[password]
+  grant_flows %w[password authorization_code]
 end
