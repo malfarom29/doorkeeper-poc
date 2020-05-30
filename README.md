@@ -195,7 +195,7 @@ The `code_verifier` should be a high-entropy cryptographic random string with a 
 
 The `code_challenge_method` is an optional parameter which available values are `plain` and `S256` (this is the recommended).
 
-The `code_challenge` is the SHA256 Hash value of the `code_verifire` url safe base64 encoded.
+The `code_challenge` is the SHA256 Hash value of the `code_verifier` url safe base64 encoded.
 
 ```ruby
 code_challenge = Base64.urlsafe_encode64(Digest::SHA256.digest(code_verifier))[0]
@@ -213,7 +213,7 @@ To request the authorization code make a `POST /oauth/authorize` with the follow
 }
 ```
 
-And now to request a token make a `POST /oauth/token` with the same parametes as for the authorization code flow but adding `code_verifier`
+And now to request a token make a `POST /oauth/token` with the same parametes as for the authorization code flow but adding the `code_verifier`
 
 ```json
 {
