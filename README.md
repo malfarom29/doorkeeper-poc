@@ -87,7 +87,9 @@ api_only
 base_controller 'ActionController::API'
 ```
 
-## Doorkeeper-Devise Configuration
+## Password Flow
+
+### Doorkeeper-Devise Configuration
 
 One of the grant flows we are using is `password`, for this we are going to use [Devise](https://github.com/heartcombo/devise) as authentication solution so we can handle user passwords easily.
 
@@ -124,7 +126,7 @@ Now, to request the access token send the `username`, `password` and `grant_type
 
 And this will send us back our `access_token` and `refresh_token`.
 
-## Doorkeeper Authorization Code Flow
+## Authorization Code Flow
 
 For the `authorization_code` grant we define `resource_owner_authenticator` on the initializer
 
@@ -175,12 +177,53 @@ We will take the code and send it to `POST /oauth/token` with the following para
 
 ```json
 {
-	"client_id": "GENERATED_APPLICATION_UID",
-	"client_secret": "GENERATED_APPLICATION_SECRET",
-	"code": "AUTHORIZATION_CODE_PREVIOUSLY_GENERATED",
-	"redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
-	"grant_type": "authorization_code"
+  "client_id": "GENERATED_APPLICATION_UID",
+  "client_secret": "GENERATED_APPLICATION_SECRET",
+  "code": "AUTHORIZATION_CODE_PREVIOUSLY_GENERATED",
+  "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+  "grant_type": "authorization_code"
 }
 ```
 
 And this will send us back our `access_token` and `refresh_token`.
+
+## PKCE Flow
+
+This flow is an extension of the authorization code flow, where a couple of new properties (`code_challenge` and `code_challenge_method`) will be required to request the authorization code and a new one (`code_verifier`) to request the token.
+
+The `code_verifier` should be a high-entropy cryptographic random string with a minimum of 43 characters and a maxium of239 characters. Should only use A-Z, a-z, "-", ".", "_" "~" characters.
+
+The `code_challenge_method` is an optional parameter which available values are `plain` and `S256` (this is the recommended).
+
+The `code_challenge` is the SHA256 Hash value of the `code_verifire` url safe base64 encoded.
+
+```ruby
+code_challenge = Base64.urlsafe_encode64(Digest::SHA256.digest(code_verifier))[0]
+```
+
+To request the authorization code make a `POST /oauth/authorize` with the following parameters 
+
+```json
+{
+  "client_id": "GENERATED_APPLICATION_UID",
+  "code_challenge_method": "S256",
+  "code_challenge": "ENCODED_CODE_VERIFIER",
+  "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+  "response_type": "code"
+}
+```
+
+And now to request a token make a `POST /oauth/token` with the same parametes as for the authorization code flow but adding `code_verifier`
+
+```json
+{
+  "client_id": "GENERATED_APPLICATION_UID",
+  "client_secret": "GENERATED_APPLICATION_SECRET",
+  "code": "AUTHORIZATION_CODE_PREVIOUSLY_GENERATED",
+  "code_verifier": "CODE_VERIFIER",
+  "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+  "grant_type": "authorization_code"
+}
+```
+
+And this will send us back our `access_token` and `refresh_token`. But for this flow the `refresh_token` won't work.
