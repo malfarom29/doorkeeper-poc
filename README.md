@@ -227,3 +227,21 @@ And now to request a token make a `POST /oauth/token` with the same parametes as
 ```
 
 And this will send us back our `access_token` and `refresh_token`. But for this flow the `refresh_token` won't work.
+
+## Client Credentials Flow
+
+For this flow we will only set or add `client_credentials` in our grant_flows
+
+```ruby
+grant_flows %w[client_credentials]
+```
+
+To request the `access_token` we have to do a `POST /oauth/token` sending only the `client_id`, `client_secret` and `grant_type`.
+
+```json
+{
+  "client_id": "GENERATED_APPLICATION_UID",
+  "client_secret": "GENERATED_APPLICATION_SECRET",
+  "grant_type": "client_credentials"
+}
+```
