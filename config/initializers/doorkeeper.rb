@@ -21,5 +21,5 @@ Doorkeeper.configure do
   end
 
   use_refresh_token
-  grant_flows %w[password authorization_code]
+  grant_flows %w[password authorization_code client_credentials]
 end
