@@ -288,6 +288,6 @@ To get a new `access_token` from the `refresh_token`, make a request to the `POS
 }
 ```
 
-Because the `previous_refresh_token` field wa deleted from the `ouath_access_tokens` table, the refresh token can be used only once.
+Because the `previous_refresh_token` field was deleted from the `ouath_access_tokens` table, the refresh token can be used only once.
 
 This flow won't work for `client_credentials` or `pkce` flows.
