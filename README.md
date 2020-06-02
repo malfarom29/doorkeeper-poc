@@ -189,7 +189,7 @@ And this will send us back our `access_token` and `refresh_token`.
 
 This flow is an extension of the authorization code flow, where a couple of new properties (`code_challenge` and `code_challenge_method`) will be required to request the authorization code. Also, a new one (`code_verifier`) to request the token.
 
-The `code_verifier` should be a high-entropy cryptographic random string with a minimum of 43 characters and a maxium of 239 characters. Should only use A-Z, a-z, "-", ".", "_" "~" characters.
+The `code_verifier` should be a high-entropy cryptographic random string with a minimum of 43 characters and a maxium of 128 characters. Should only use A-Z, a-z, "-", ".", "_" "~" characters.
 
 The `code_challenge_method` is an optional parameter which valid values are `plain` and `S256` (the latter one is recommended).
 
