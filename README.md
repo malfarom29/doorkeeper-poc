@@ -245,3 +245,34 @@ To request the `access_token` we have to do a `POST /oauth/token` sending only t
   "grant_type": "client_credentials"
 }
 ```
+
+## Assertion Flow
+
+For this flow we have to install `doorkeeper-grants_assertion`
+
+```Gemfile
+gem 'doorkeeper-grants_assertion'
+```
+
+And then configure the `resource_owner_from_assertion` block where we are going to make a `GET` request to the selected provider auth API sending the access_token that will come from the client. In this case I used [Faraday](https://github.com/lostisland/faraday) gem to make those HTTP requests.
+
+```ruby
+resource_owner_from_assertion do
+  case params[:provider]
+  when 'google'
+    conn = FaradayConnection::OAuthProvider::Google.new
+    provider_id = conn.request_id(params[:access_token])
+    User.find_by_google_id(provider_id)
+  when 'facebook'
+    conn = FaradayConnection::OAuthProvider::Facebook.new
+    provider_id = conn.request_id(params[:access_token])
+    User.find_by_facebook_id(provider_id)
+  end
+end
+```
+
+And set/add `assertion` grant flow
+
+```ruby
+grant_flows %w[assertion]
+```
