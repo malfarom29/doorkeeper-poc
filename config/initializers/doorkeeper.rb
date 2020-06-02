@@ -20,6 +20,19 @@ Doorkeeper.configure do
     app
   end
 
+  resource_owner_from_assertion do
+    case params[:provider]
+    when 'google'
+      conn = FaradayConnection::OAuthProvider::Google.new
+      provider_id = conn.request_id(params[:access_token])
+      User.find_by_google_id(provider_id)
+    when 'facebook'
+      conn = FaradayConnection::OAuthProvider::Facebook.new
+      provider_id = conn.request_id(params[:access_token])
+      User.find_by_facebook_id(provider_id)
+    end
+  end
+
   use_refresh_token
-  grant_flows %w[password authorization_code client_credentials]
+  grant_flows %w[password authorization_code client_credentials assertion]
 end
