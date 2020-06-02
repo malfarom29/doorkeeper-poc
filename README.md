@@ -191,7 +191,7 @@ This flow is an extension of the authorization code flow, where a couple of new 
 
 The `code_verifier` should be a high-entropy cryptographic random string with a minimum of 43 characters and a maxium of 239 characters. Should only use A-Z, a-z, "-", ".", "_" "~" characters.
 
-The `code_challenge_method` is an optional parameter which available values are `plain` and `S256` (this is the recommended).
+The `code_challenge_method` is an optional parameter which valid values are `plain` and `S256` (the latter one is recommended).
 
 The `code_challenge` is the SHA256 Hash value for the `code_verifier` safe base64-encoded url.
 
