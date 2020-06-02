@@ -276,3 +276,20 @@ And set/add `assertion` grant flow
 ```ruby
 grant_flows %w[assertion]
 ```
+
+## Refresh Token Flow
+
+For this flow we only add `use_refresh_token` inside our `Doorkeeper.configure` to be able to use it.
+
+To get a new `access_token` from the `refresh_token` we do a `POST /oauth/token` with the following parameters
+
+```json
+{
+  "refresh_token": "GENERATED_REFRESH_TOKEN",
+  "grant_type": "refresh_token"
+}
+```
+
+As we deleted `previous_refresh_token` from `ouath_access_tokens` table, this refresh token can be used only once.
+
+This flow won't work for `client_credentials` or `pkce` flows.
