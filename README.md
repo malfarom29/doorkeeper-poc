@@ -1,6 +1,6 @@
 # How to run the project
 
-You must set the env variables required for the project
+Before starting the project, please set the env variables required for it to run:
 
 ```
 RAILS_ENV=
@@ -18,20 +18,20 @@ Then, to start the project, run the following command:
 
 # Getting Started
 
-This is a POC project for Doorkeeper usability, so first we have to add it in our Gemfile
+This is a POC project for the Doorkeeper gem usability, so first let's add it in our Gemfile
 
 ```
 gem 'doorkeeper'
 ```
 
-Now we have to install doorkeeper and generate its migration by running the following commands:
+Now let's install Doorkeeper and generate its migration by running the following commands:
 
 ```bash
 bundle exec rails generate doorkeeper:install
 bundle exec rails generate doorkeeper:migration
 ```
 
-Now we go to the migration we've just created and remove `null: false` for redirtect_uri on `oauth_applications` table, because we don't really need it right now. So the table create migration should look like this:
+After that, go to the migration just created and remove `null: false` for the `redirtect_uri` field on the `oauth_applications` table, because it will not be needed. The `create_table` migration should look like this:
 
 ```ruby
 create_table :oauth_applications do |t|
@@ -47,7 +47,7 @@ end
 add_index :oauth_applications, :uid, unique: true
 ```
 
-Now for `oauth_access_tokens` table, remove `previous_refresh_token` field so once we use a refresh token this will be instantly revoked. The table create migration should look like this:
+Now for the `oauth_access_tokens` table, remove the `previous_refresh_token` field so that when a refresh token is used, the previous will be instantly revoked. The `create_table` migration should look like this:
 
 ```ruby
 create_table :oauth_access_tokens do |t|
@@ -71,7 +71,7 @@ add_foreign_key(
 )
 ```
 
-As for `oauth_access_grants` table, leave as it is.
+As for the `oauth_access_grants` table, leave it as it is.
 
 Run 
 
@@ -79,7 +79,7 @@ Run
 bundle exec rails db:migrate
 ```
 
-Now, as we are working on a Rails API and also working without using doorkeeper scopes, go to `config/initializers/doorkeeper.rb` and add the following two lines
+This POC focuses on working with a Rails API without Doorkeeper Scopes. To configure that, go to the `config/initializers/doorkeeper.rb` file and add the following two lines:
 
 ```ruby
 default_scopes :public
@@ -91,11 +91,9 @@ base_controller 'ActionController::API'
 
 ### Doorkeeper-Devise Configuration
 
-One of the grant flows we are using is `password`, for this we are going to use [Devise](https://github.com/heartcombo/devise) as authentication solution so we can handle user passwords easily.
+One of the grant flows that will be used is `password`, and for that, we will be using [Devise](https://github.com/heartcombo/devise) as the authentication solution to handle user passwords more conveniently.
 
-To configure doorkeeper with devise, go to `config/initializers/doorkeeper.rb`.
-
-For this grant we set `resource_owner_from_credentials` block like this:
+To configure Doorkeeper with Devise, go to `config/initializers/doorkeeper.rb` file, and set the `resource_owner_from_credentials` block like this:
 
 ```ruby
 resource_owner_from_credentials do |_routes|
@@ -107,13 +105,13 @@ resource_owner_from_credentials do |_routes|
 end
 ```
 
-And add `password` on grant_flows.
+Then add `password` on grant_flows.
 
 ```ruby
 grant_flows %w[password]
 ```
 
-Now, to request the access token send the `username`, `password` and `grant_type` to `POST /oauth/token`.
+To request the access token, send the `username`, `password` and `grant_type` to the `POST /oauth/token` endpoint.
 
 ```json
 // Request Body
@@ -124,11 +122,11 @@ Now, to request the access token send the `username`, `password` and `grant_type
 }
 ```
 
-And this will send us back our `access_token` and `refresh_token`.
+This will send us back our `access_token` and `refresh_token`.
 
 ## Authorization Code Flow
 
-For the `authorization_code` grant we define `resource_owner_authenticator` on the initializer
+For the `authorization_code` grant, let's define `resource_owner_authenticator` on the Doorkeeper initializer
 
 ```ruby
 resource_owner_authenticator do
@@ -137,21 +135,21 @@ resource_owner_authenticator do
 end
 ```
 
-And set or add `authorization_code` as grant_flow
+Don't forget to set or add `authorization_code` as grant_flow
 
 ```ruby
 grant_flows %w[authorization_code]
 ```
 
-Now we proceed to create our `oauth_application` directly from the console setting `redirect_uri` as `urn:ietf:wg:oauth:2.0:oob`  this will tell doorkeeper to display authorization code instead of redirecting to a client application, because we are working on an API this works for us.
+Proceed to create our `oauth_application` directly from the console setting `redirect_uri` as `urn:ietf:wg:oauth:2.0:oob`. This will tell Doorkeeper to display the authorization code instead of redirecting to a client application, because we are working on an API, this will work for us.
 
 ```ruby
 Doorkeeper::Application.create(name: 'POC App', redirect_uri: "urn:ietf:wg:oauth:2.0:oob")
 ```
 
-This will create an application with an `uid` and a `secret`, which will be our `client_id` and `client_secret` respectively.
+The snippet above will create an application with an `uid` and a `secret`, which will be our `client_id` and `client_secret` respectively.
 
-Now make a request to `POST /oauth/authorize` with the following parameters
+Now make a request to the `POST /oauth/authorize` endpoint with the following parameters
 
 ```json
 {
@@ -173,7 +171,7 @@ The response will be like this:
 }
 ```
 
-We will take the code and send it to `POST /oauth/token` with the following params
+We will take the code and send it to the `POST /oauth/token` endpoint with the following params:
 
 ```json
 {
@@ -189,19 +187,19 @@ And this will send us back our `access_token` and `refresh_token`.
 
 ## PKCE Flow
 
-This flow is an extension of the authorization code flow, where a couple of new properties (`code_challenge` and `code_challenge_method`) will be required to request the authorization code and a new one (`code_verifier`) to request the token.
+This flow is an extension of the authorization code flow, where a couple of new properties (`code_challenge` and `code_challenge_method`) will be required to request the authorization code. Also, a new one (`code_verifier`) to request the token.
 
-The `code_verifier` should be a high-entropy cryptographic random string with a minimum of 43 characters and a maxium of239 characters. Should only use A-Z, a-z, "-", ".", "_" "~" characters.
+The `code_verifier` should be a high-entropy cryptographic random string with a minimum of 43 characters and a maxium of 239 characters. Should only use A-Z, a-z, "-", ".", "_" "~" characters.
 
-The `code_challenge_method` is an optional parameter which available values are `plain` and `S256` (this is the recommended).
+The `code_challenge_method` is an optional parameter which valid values are `plain` and `S256` (the latter one is recommended).
 
-The `code_challenge` is the SHA256 Hash value of the `code_verifier` url safe base64 encoded.
+The `code_challenge` is the SHA256 Hash value for the `code_verifier` safe base64-encoded url.
 
 ```ruby
 code_challenge = Base64.urlsafe_encode64(Digest::SHA256.digest(code_verifier))[0]
 ```
 
-To request the authorization code make a `POST /oauth/authorize` with the following parameters 
+To request the authorization code make a request to the `POST /oauth/authorize` token with the following parameters 
 
 ```json
 {
@@ -213,7 +211,7 @@ To request the authorization code make a `POST /oauth/authorize` with the follow
 }
 ```
 
-And now to request a token make a `POST /oauth/token` with the same parametes as for the authorization code flow but adding the `code_verifier`
+And now to request a token, make a request to the `POST /oauth/token` endpoint with the same parametes used for the authorization code flow, but adding the `code_verifier`
 
 ```json
 {
@@ -226,17 +224,17 @@ And now to request a token make a `POST /oauth/token` with the same parametes as
 }
 ```
 
-And this will send us back our `access_token` and `refresh_token`. But for this flow the `refresh_token` won't work.
+And this will send us back our `access_token` and `refresh_token`. However, for this flow the `refresh_token` won't work.
 
 ## Client Credentials Flow
 
-For this flow we will only set or add `client_credentials` in our grant_flows
+For this flow, only set or add `client_credentials` to the grant_flows
 
 ```ruby
 grant_flows %w[client_credentials]
 ```
 
-To request the `access_token` we have to do a `POST /oauth/token` sending only the `client_id`, `client_secret` and `grant_type`.
+To request the `access_token`, we have to make a request to the `POST /oauth/token` endpoint, sending only the `client_id`, `client_secret` and `grant_type`.
 
 ```json
 {
@@ -248,13 +246,13 @@ To request the `access_token` we have to do a `POST /oauth/token` sending only t
 
 ## Assertion Flow
 
-For this flow we have to install `doorkeeper-grants_assertion`
+For this flow, it will be necessary to install `doorkeeper-grants_assertion`
 
 ```Gemfile
 gem 'doorkeeper-grants_assertion'
 ```
 
-And then configure the `resource_owner_from_assertion` block where we are going to make a `GET` request to the selected provider auth API sending the access_token that will come from the client. In this case I used [Faraday](https://github.com/lostisland/faraday) gem to make those HTTP requests.
+And then configure the `resource_owner_from_assertion` block where we are going to make a `GET` request to the selected auth API provider, sending the access_token that will come from the client. In this case I used the [Faraday](https://github.com/lostisland/faraday) gem to make the HTTP requests.
 
 ```ruby
 resource_owner_from_assertion do
@@ -271,7 +269,7 @@ resource_owner_from_assertion do
 end
 ```
 
-And set/add `assertion` grant flow
+Set or add `assertion` to the grant flows
 
 ```ruby
 grant_flows %w[assertion]
@@ -279,9 +277,9 @@ grant_flows %w[assertion]
 
 ## Refresh Token Flow
 
-For this flow we only add `use_refresh_token` inside our `Doorkeeper.configure` to be able to use it.
+For this flow, let's add `use_refresh_token` inside our `Doorkeeper.configure` to be able to use it.
 
-To get a new `access_token` from the `refresh_token` we do a `POST /oauth/token` with the following parameters
+To get a new `access_token` from the `refresh_token`, make a request to the `POST /oauth/token` with the following parameters
 
 ```json
 {
@@ -290,6 +288,6 @@ To get a new `access_token` from the `refresh_token` we do a `POST /oauth/token`
 }
 ```
 
-As we deleted `previous_refresh_token` from `ouath_access_tokens` table, this refresh token can be used only once.
+Because the `previous_refresh_token` field wa deleted from the `ouath_access_tokens` table, the refresh token can be used only once.
 
 This flow won't work for `client_credentials` or `pkce` flows.
